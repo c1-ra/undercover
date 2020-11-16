@@ -1,7 +1,7 @@
 # undercover
 Undercover multiplayer game in Python
 
-This video helped a lot to have some basic knowledge of the use of socket and threadings:
+This video helped me a lot to have some basic knowledge of the use of socket and threadings:
 https://www.youtube.com/watch?v=McoDjOCb2Zo
 
 To test it, it is necessary to add server and port value in server.py (lines 6-7) and network.py (lines 7-8).
