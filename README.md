@@ -9,7 +9,7 @@ To test it, it is necessary to add server and port value in server.py (lines 6-7
 It is my first try at an online multiplayer game, and it is still a WIP.
 
 Notes:
-The first player to connect have to choose a number of couple of words. It is to be sure that when they play another time that they can pick from where they left and not have the same words.
+The first player to connect have to choose a number for the words with which they will play. It is to be sure that when they play another time they can pick from where they left and not have the same words.
 
 Next steps:
 - clean the files (repetitions, structure, maybe move the game logic in server.py to another file)
