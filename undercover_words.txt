@@ -1,0 +1,4 @@
+chat;chien
+baignoire;douche
+couteau;fourchette
+casserole;poêle
