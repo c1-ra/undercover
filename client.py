@@ -54,7 +54,7 @@ btn_hovered_c = (255, 255, 255)
 btn_inactive_c = (210, 210, 210)
 
 
-# Background buttons
+# Buttons creation
 margin = 125
 space = (screen_w - margin * 2 - 150 * 5) / 4
 bg_btn_w = 150
@@ -354,4 +354,3 @@ def beginning_screen():
 
 while True:
 	beginning_screen()
-	
