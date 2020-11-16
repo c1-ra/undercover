@@ -12,6 +12,6 @@ Next steps:
 
 - clean the files (repetitions, structure, maybe move the game logic in server.py to another file)
 - add a back button
-- server.py : use a dictionary player_id:[player_name, role, words_nb] to get in one step all the information needed for the client to show the player role, instead of separate it in three different pieces od information
-- not allow two same player names
+- server.py : use a dictionary player_id:[player_name, role, words_nb] to get in one step all the information needed for the client to show the player role, instead of separate it in three different pieces of information
+- not allow two same player_names
 - not allow the words used to get game information back from the server to be used as player_names / find another way to get these information without sending strings -> maybe trigger it from the server.py file
