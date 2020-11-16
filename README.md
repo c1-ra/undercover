@@ -8,10 +8,13 @@ To test it, it is necessary to add server and port value in server.py (lines 6-7
 
 It is my first try at an online multiplayer game, and it is still a WIP.
 
-Next steps:
+Notes:
+The first player to connect have to choose a number of couple of words. It is to be sure that when they play another time that they can pick from where they left and not have the same words.
 
+Next steps:
 - clean the files (repetitions, structure, maybe move the game logic in server.py to another file)
 - add a back button
 - server.py : use a dictionary player_id:[player_name, role, words_nb] to get in one step all the information needed for the client to show the player role, instead of separate it in three different pieces of information
 - not allow two same player_names
 - not allow the words used to get game information back from the server to be used as player_names / find another way to get these information without sending strings -> maybe trigger it from the server.py file
+- add the possibility to create or join a room
