@@ -10,7 +10,7 @@ It is my first try at an online multiplayer game, and it is still a WIP.
 
 Next steps:
 
-- clean the files (repetitions, structure, maybe move the game logic in server.py fo another file)
+- clean the files (repetitions, structure, maybe move the game logic in server.py to another file)
 - add a back button
 - server.py : use a dictionary player_id:[player_name, role, words_nb] to get in one step all the information needed for the client to show the player role, instead of separate it in three different pieces od information
 - not allow two same player names
