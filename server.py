@@ -3,7 +3,7 @@ from _thread import *
 import pickle
 import random
 
-server = "000.000.0.00"
+server = "xx.xx.xx.xx"
 port = 0000
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
