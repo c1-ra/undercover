@@ -3,8 +3,8 @@ from network import Network
 
 # Variables
 undercover = "Undercover"
-civil = "Civil"
-mr_white = "M. White"
+civilian = "Civilian"
+mr_white = "Mr. White"
 sep = ";"  # separator in the txt file
 
 
@@ -58,11 +58,11 @@ btn_inactive_c = (210, 210, 210)
 margin = 125
 space = (screen_w - margin * 2 - 150 * 5) / 4
 bg_btn_w = 150
-red_btn = Button(btn_inactive_c, margin, 15, bg_btn_w, 30, 'Red')
-yellow_btn = Button(btn_inactive_c, margin + bg_btn_w + space, 15, bg_btn_w, 30, 'Yellow')
-deep_blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 2 + space * 2, 15, bg_btn_w, 30, 'Deep blue')
-blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 3 + space * 3, 15, bg_btn_w, 30, 'Blue')
-green_btn = Button(btn_inactive_c, margin + bg_btn_w * 4 + space * 4, 15, bg_btn_w, 30, 'Green')
+red_btn = Button(btn_inactive_c, margin, 15, bg_btn_w, 30, 'Rouge')
+yellow_btn = Button(btn_inactive_c, margin + bg_btn_w + space, 15, bg_btn_w, 30, 'Jaune')
+deep_blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 2 + space * 2, 15, bg_btn_w, 30, 'Bleu foncé')
+blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 3 + space * 3, 15, bg_btn_w, 30, 'Bleu')
+green_btn = Button(btn_inactive_c, margin + bg_btn_w * 4 + space * 4, 15, bg_btn_w, 30, 'Vert')
 bg_btns = [red_btn, yellow_btn, deep_blue_btn, blue_btn, green_btn]
 
 begin_btn = Button(btn_inactive_c, screen_w / 2 - 150 / 2, 435, 150, 30, 'Commencer')
@@ -209,7 +209,7 @@ def draw_bg_btns():
 
 
 def display_role(role, player_name, words, words_nb):
-	if role == civil:
+	if role == civilian:
 		display_txt_x_center(230, 30, "{}, votre mot est {}.".format(player_name, words[words_nb - 1][0]))
 	elif role == undercover:
 		display_txt_x_center(230, 30, "{}, votre mot est {}.".format(player_name, words[words_nb - 1][1]))
@@ -287,18 +287,16 @@ def main():
 				pygame.time.delay(50)
 				step += 1
 		elif step == 8:
-			role = n.send("game")
-			order = n.send("order")
-			words_nb = n.send("words_couple")
-			pygame.time.delay(100)  # necessary or it seems that the server global launch_ready becomes False before some of the clients had retrieve the True value and got to this step
+			player_info = n.send("game-start")
+			pygame.time.delay(100)  # necessary or it seems that the server global launch_ready becomes False before some of the clients have retrieved the True value and got to this step
 			launch_ready = n.send("launch_false")
 			print("Test : launch_ready est pour le jour", player_id, " ", launch_ready)
 			step += 1
 		elif step == 9:
 			draw_bg_btns()
 			display_players()
-			display_role(role, player_name, words, words_nb)
-			display_list(order, screen_w / 2 - 150 / 2, 275)
+			display_role(player_info[0], player_name, words, player_info[1])
+			display_list(player_info[2], screen_w / 2 - 150 / 2, 275)
 			if player_id == 0:
 				next_btn.draw(screen)
 			if player_id != 0:
