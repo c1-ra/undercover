@@ -25,7 +25,7 @@ Edit 14/12:
     7: check if the game_id launch is True or not
     8: the launcher launches the game: game_id launch becomes True
     9: game starts
-    10: launch resetted to False for all clients
+    10: launch reset to False for all clients
     11: play with next words
 
 Next steps:
