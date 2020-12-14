@@ -58,20 +58,24 @@ btn_inactive_c = (210, 210, 210)
 margin = 125
 space = (screen_w - margin * 2 - 150 * 5) / 4
 bg_btn_w = 150
-red_btn = Button(btn_inactive_c, margin, 15, bg_btn_w, 30, 'Rouge')
-yellow_btn = Button(btn_inactive_c, margin + bg_btn_w + space, 15, bg_btn_w, 30, 'Jaune')
-deep_blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 2 + space * 2, 15, bg_btn_w, 30, 'Bleu foncé')
-blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 3 + space * 3, 15, bg_btn_w, 30, 'Bleu')
-green_btn = Button(btn_inactive_c, margin + bg_btn_w * 4 + space * 4, 15, bg_btn_w, 30, 'Vert')
+btn_h = 30
+red_btn = Button(btn_inactive_c, margin, 15, bg_btn_w, btn_h, 'Rouge')
+yellow_btn = Button(btn_inactive_c, margin + bg_btn_w + space, 15, bg_btn_w, btn_h, 'Jaune')
+deep_blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 2 + space * 2, 15, bg_btn_w, btn_h, 'Bleu foncé')
+blue_btn = Button(btn_inactive_c, margin + bg_btn_w * 3 + space * 3, 15, bg_btn_w, btn_h, 'Bleu')
+green_btn = Button(btn_inactive_c, margin + bg_btn_w * 4 + space * 4, 15, bg_btn_w, btn_h, 'Vert')
 bg_btns = [red_btn, yellow_btn, deep_blue_btn, blue_btn, green_btn]
+
+create_room_btn = Button(btn_inactive_c, screen_w / 2 - bg_btn_w - 100, screen_h // 2 - btn_h, bg_btn_w, btn_h, 'Lancer une partie')
+join_room_btn = Button(btn_inactive_c, screen_w / 2 + 100, screen_h // 2 - btn_h, bg_btn_w, btn_h, 'Rejoindre une partie')
 
 begin_btn = Button(btn_inactive_c, screen_w / 2 - 150 / 2, 435, 150, 30, 'Commencer')
 ready_btn = Button(btn_inactive_c, screen_w / 2 - 150 / 2, 300, 150, 30, 'Prêts')
 next_btn = Button(btn_inactive_c, screen_w / 2 - 150 / 2 - 25, screen_h - 90, 200, 30, 'Jouer avec les prochains mots')
 
-all_btns = [red_btn, yellow_btn, deep_blue_btn, blue_btn, green_btn, begin_btn, ready_btn, next_btn]
+all_btns = [red_btn, yellow_btn, deep_blue_btn, blue_btn, green_btn, create_room_btn, join_room_btn, begin_btn, ready_btn, next_btn]
 
-# Backgrounds (I did not use the fill method because I would like to easily replace the images later)
+# Backgrounds
 red_com = pygame.image.load('bg1.gif')
 yellow_com = pygame.image.load('bg2.gif')
 deep_blue = pygame.image.load('bg3.gif')
@@ -194,12 +198,11 @@ def display_txt_x_center(y, h, txt):
 	screen.blit(txt_surface, rect)
 
 
-def display_players():
-	global players
+def display_players(players_names):
 	i = 0
 	y = 180
-	while i <= (len(players) - 1):
-		display_txt(50, y, 185, 30, "{}".format(players[i]))
+	while i <= (len(players_names) - 1):
+		display_txt(50, y, 185, 30, "{}".format(players_names[i]))
 		i += 1
 		y += 45
 
@@ -231,79 +234,107 @@ def display_list(lst, x, y):
 
 
 step = 1
-player_id = None
-player_name = None
-players = []
-players.clear()
-
 
 launch_ready = False
 
-
 def main():
-	global step, player_id, input_content, player_name, players, words, words_nb, launch_ready
+	global step, input_content, words, launch_ready
 	run = True
 	clock = pygame.time.Clock()
 	n = Network()
 	player_id = n.get_id()
 	print('You are player', player_id)
-	player_name = input_content
+	player_name = n.send("0 "+input_content)
 	print("You are", player_name)
+	player_launcher = None
+	join_room_existing = True
+	players_names = []
+	words_nb = 0
 
 
 	while run:
 		clock.tick(60)
 		screen.blit(background, (0, 0))
-		if step == 2:
-			if player_id != 0:
-				step = 5
+		if step == 2:  # retrieve words
+			print("2, c'est la step", step)
 			words = retrieve_words('undercover_words.txt')
 			step += 1
-		elif step == 3:
-			if player_id == 0:
-				display_txt_x_center(250, 30, "Bonjour {} !".format(player_name))
-				ask_sth_centered("Choisissez un nombre de couple de mots entre 1 et {}".format(len(words)))
-			else:
-				step = 5
-		elif step == 4:
-			words_nb = n.send(int(input_content))
+		elif step == 3:  # choose to create a room (player_launcher) or join one
+			print("3, c'est la step", step)
+			display_txt_x_center(250, 30, "Bonjour {} !".format(player_name))
+			create_room_btn.draw(screen)
+			join_room_btn.draw(screen)
+		elif step == 4:  # for tests purposes
+			print("4, c'est la step", step)
+			print("player launcher:", player_launcher)
 			step += 1
 		elif step == 5:
-			draw_bg_btns()
-			if player_id == 0:
-				display_txt_x_center(105, 30, "Couple de mots : {}".format(words_nb))
-			players = n.send(player_name)
-			display_players()
-			ready_btn.draw(screen)
-		elif step == 6:
-			step += 1
-		elif step == 7:
-			draw_bg_btns()
-			players = n.send(player_name)
-			display_players()
-			display_txt_x_center(200, 30, "En attente du lancement du jeu")
-			launch_ready = n.send("launch")
-			if launch_ready:
-				pygame.time.delay(50)
+			print("5, c'est la step", step)
+			if player_launcher:
+				ask_sth_centered("Entrez le nom que vous voulez donner à la partie :")
+			else:
+				ask_sth_centered("Entrez le nom de la partie que vous voulez rejoindre :")
+				print("join room existing? ", join_room_existing)
+				if not join_room_existing:
+					display_txt_x_center(155, 30, "Le nom de partie que vous avez choisi n'existe pas.")
+		elif step == 6:  # send the room_name (create the info for launcher, checks if it exists for !launcher)
+			print("6, c'est la step", step)
+			if player_launcher:
+				room_name = n.send("4 "+input_content)
 				step += 1
-		elif step == 8:
-			player_info = n.send("game-start")
-			pygame.time.delay(100)  # necessary or it seems that the server global launch_ready becomes False before some of the clients have retrieved the True value and got to this step
-			launch_ready = n.send("launch_false")
-			print("Test : launch_ready est pour le jour", player_id, " ", launch_ready)
+			else:
+				room_name = input_content
+				join_room_existing = n.send("5 " + input_content)
+				print("room existing? ", join_room_existing)
+				if join_room_existing:
+					step += 5
+				else:
+					step -= 1
+		elif step == 7:  # for player_launcher only : choose the couple of words to begin from
+			print("c'est la step", step)
+			ask_sth_centered("Choisissez un nombre de couple de mots entre 1 et {}".format(len(words)))
+		elif step == 8:  # for player_launcher only: send the words couple number
+			print("c'est la step", step)
+			words_nb = n.send("6 "+input_content)
 			step += 1
-		elif step == 9:
+		elif step == 9:  # for player_launcher only
+			print("c'est la step", step)
 			draw_bg_btns()
-			display_players()
+			display_txt_x_center(105, 30, "Couple de mots : {}".format(words_nb))
+			display_txt_x_center(155, 30, "Nom de la partie : {}".format(room_name))
+			ready_btn.draw(screen)
+			players_names = n.send("1 " + player_name)
+			if isinstance(players_names, list):
+				display_players(players_names)
+		elif step == 10:  # not used for the moment
+			pass
+		elif step == 11: # for !player_launcher only
+			print("c'est la step", step)
+			draw_bg_btns()
+			display_txt_x_center(200, 30, "En attente du lancement du jeu")
+			players_names = n.send("1 " + player_name)
+			if isinstance(players_names, list):
+				display_players(players_names)
+			launch_ready = n.send("7 ")
+			if launch_ready:
+				step += 1
+		elif step == 12:  # for everybody, launcher or not: get the player role and game order, reset launch_ready to False
+			player_info = n.send("9 ")
+			pygame.time.delay(100)  # necessary or it seems that the server global launch_ready becomes False before some of the clients have retrieved the True value and got to this step
+			launch_ready = n.send("10")
+			print("Test : launch_ready est pour le joueur", player_id, " ", launch_ready)
+			step += 1
+		elif step == 13:  # display the roles and play order, player_launcher has a next_button
+			draw_bg_btns()
+			display_players(players_names)
 			display_role(player_info[0], player_name, words, player_info[1])
 			display_list(player_info[2], screen_w / 2 - 150 / 2, 275)
-			if player_id == 0:
+			if player_launcher:
 				next_btn.draw(screen)
-			if player_id != 0:
-				launch_ready = n.send("launch")
+			else:
+				launch_ready = n.send("7 ")
 				if launch_ready:
-					step = 8
-
+					step = 12
 
 		for event in pygame.event.get():
 
@@ -316,14 +347,20 @@ def main():
 				for btn in bg_btns:
 					if btn.click(pos):
 						change_bg(btn)
+				if create_room_btn.click(pos):
+					player_launcher = n.send("2 ")
+					step += 1
+				if join_room_btn.click(pos):
+					player_launcher = n.send("3 ")
+					step += 1
 				if ready_btn.click(pos):  # only player_id = 0 see this button and can interact with it
-					launch_ready = n.send("launch")
-					step = 8
+					launch_ready = n.send("8 ")
+					step = 12
 				if next_btn.click(pos):  # only player_id = 0 see this button and can interact with it
 					print("next")
-					words_nb = n.send("next")
-					launch_ready = n.send("launch")
-					step = 8
+					words_nb = n.send("11")
+					launch_ready = n.send("8 ")
+					step = 12
 			if event.type == pygame.MOUSEMOTION:
 				for btn in all_btns:
 					if btn.click(pos):

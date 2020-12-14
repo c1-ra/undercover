@@ -4,7 +4,7 @@ import pickle
 import random
 
 server = "xx.xx.xx.xx"
-port = 0000
+port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -39,95 +39,167 @@ def first_player(players_roles):
 			break
 	return player1
 
-
-def game_program():
-	global roles, roles_repartition, players_ids, players_roles, order_ids
-	roles = roles_repartition[len(players_ids)]
+def roles_program(game_id):
+	global roles_repartition
+	roles = roles_repartition[len(games_players[game_id])]
 	random.shuffle(roles)
-	players_roles = dict(zip(players_ids, roles))
+	players_roles = dict(zip(games_players[game_id], roles))
+	return players_roles
+
+
+def order_program(game_id, players_roles):
+	global roles_repartition
 	player1 = first_player(players_roles)
-	i_player1 = players_ids.index(player1)
-	order_ids = players_ids[i_player1:] + players_ids[:i_player1]
+	i_player1 = games_players[game_id].index(player1)
+	order_ids = games_players[game_id][i_player1:] + games_players[game_id][:i_player1]
+	return order_ids
 
 
-def order_list_with_names():
-	global order_ids, order_names, players_info
+def order_list_with_names(order_ids):
+	global order_names, players_info
 	# copy of order_ids to replace ids by names
 	order_names = order_ids[:]
 	for i in order_ids:
 		order_names[i] = players_info[order_ids[i]][0]
+	return order_names
 
 
 # Variables
-players_roles = {}
-order_ids = []
-order_names = []
-
 players_ids = []
-players_names = []
-
-words_nb = 0
 
 current_player = 0
 
-launch = False
-next = False
-
-# players_info = {player_id: [0:player_name, (1:launcher), 2: role]} (launcher will be useful when there are different rooms)
+# players_info = {player_id: [0:player_name, 1.game_id, (2:launcher), 3:role]}
 players_info = {}
+
+# games_info = {game_id: [0.game_name, 1.words_nb, 2.players_roles, 3.order_names, 4.launch = False, 5.next = False]}
+games_info = {}
+
+games = []  # games[id] = room_name
+
+games_players = {}  # {game_id : [list of players_ids in this game_id)]}
 
 # Threads
 def threaded_client(conn, player_id):
-	global players_ids, players_names, players_info, words_nb, launch, next, order_ids, order_names
+	global games, players_info, games, games_info, games_players
+
+	room_name_create = None
+	room_name_join = None
+
+	words_nb = None
+
+	players_names_to_display = []
+
+	launch_prog = False
 
 	conn.send(pickle.dumps(player_id))
-	reply = ""
 
 	while True:
 		try:
-			data = pickle.loads(conn.recv(2048))
+			data = str(pickle.loads(conn.recv(2048)))
+			print(data)
+			data_id = int(data[:2])
+			print("data_id:", data_id)
+			data_content = data[2:]
+			print("data_content:", data_content)
 
 			if not data:
 				print("Disconnected")
 				break
 			else:
-				if data == "launch":
-					if player_id == 0:
-						launch = True
-						game_program()
-						order_list_with_names()
-						reply = True
-					elif launch == True:
-						reply = True
+				if data_id == 0:
+					print("data_id = ", data_id)
+					players_info[player_id] = [data_content, None, None]
+					conn.sendall(pickle.dumps(data_content))
+				elif data_id == 1:
+					print("data_id = ", data_id)
+					for i in games_players[game_id]:
+						if players_info[games_players[game_id][i]][0] not in players_names_to_display:
+							players_names_to_display.append(players_info[games_players[game_id][i]][0])
+						print("players names to display: ", players_names_to_display)
+					conn.sendall(pickle.dumps(players_names_to_display))
+				elif data_id == 2:
+					print("data_id = ", data_id)
+					players_info[player_id][1] = True
+					conn.sendall(pickle.dumps(True))
+				elif data_id == 3:
+					print("data_id = ", data_id)
+					players_info[player_id][1] = False
+					conn.sendall(pickle.dumps(False))
+				elif data_id == 4:
+					print("data_id = ", data_id)
+					conn.sendall(pickle.dumps(data_content))
+					room_name_create = data_content
+				elif data_id == 5:
+					print("data_id = ", data_id)
+					if data_content in games:
+						conn.sendall(pickle.dumps(True))
+						room_name_join = data_content
 					else:
-						reply = False
-				elif data == "launch_false":
-					launch = False
-					reply = False
-				elif data == "game-start":
-					player_info = [players_roles[player_id], words_nb, order_names]
-					reply = player_info
-				elif data == "next" and player_id == 0:
-					words_nb += 1
-					reply = words_nb
-				else:
-					if isinstance(data, str):
-						if data not in players_names:
-							player_name = data
-							players_info[player_id] = [player_name, None, None]
-							players_names.append(player_name)
-						reply = players_names
-					elif isinstance(data, int) and player_id == 0:
-						words_nb = data
-						reply = words_nb
+						conn.sendall(pickle.dumps(False))
+				elif data_id == 6:
+					print("data_id = ", data_id)
+					print("Sending to player ", player_id, " words_nb = ", data_content)
+					conn.sendall(pickle.dumps(int(data_content)))
+					words_nb = int(data_content)
+				elif data_id == 7:
+					if games_info[game_id][4]:
+						conn.sendall(pickle.dumps(True))
+					else:
+						conn.sendall(pickle.dumps(False))
+				elif data_id == 8:
+					games_info[game_id][4] = True
+					launch_prog = True
+					conn.sendall(pickle.dumps(True))
+				elif data_id == 9:
+					player_info = [games_info[game_id][2][player_id], games_info[game_id][1], games_info[game_id][3]]
+					conn.sendall(pickle.dumps(player_info))
+				elif data_id == 10:
+					games_info[game_id][4] = False
+					conn.sendall(pickle.dumps(False))
+				elif data_id == 11:
+					games_info[game_id][1] += 1
+					conn.sendall(pickle.dumps(words_nb))
 
-				print("Received from player ", player_id, ": ", data)
-				print("Sending to player ", player_id, ": ", reply)
-
-			conn.sendall(pickle.dumps(reply))
+				# for debugging purposes:
+				# print("Received from player ", player_id, ": ", data)
+				# print("Sending to player ", player_id, ": ", reply)
 
 		except:
 			break
+
+		if room_name_create != None:
+			game_id = len(games)
+			games.append(room_name_create)
+			games_info[game_id] = [room_name_create, None, [], [], False, False]
+			games_players[game_id] = [player_id]
+			print("games_id: ", game_id)
+			print ("games_info: ", games_info)
+			print ("games players: ", games_players[game_id])
+			room_name_create = None
+		elif room_name_join != None:
+			print("index: ", games.index(room_name_join))
+			game_id = games.index(room_name_join)
+			games_players[game_id].append(player_id)
+			print ("games players: ", games_players[game_id])
+			room_name_join = None
+		elif words_nb != None:
+			games_info[game_id][1] = words_nb
+			words_nb = None
+		elif launch_prog:
+			players_roles = roles_program(game_id)
+			games_info[game_id][2] = players_roles
+			print("players_roles dans games_info", games_info[game_id][2])
+			order_ids = order_program(game_id, players_roles)
+			order_list_to_add = order_list_with_names(order_ids)
+			print("order_lis to add: ", order_list_to_add)
+			games_info[game_id][3] = order_list_to_add
+			print("games_infos_players_order", games_info[game_id][3])
+			launch_prog = False
+		else:
+			pass
+
+
 
 	print("Lost connection", player_id)
 	conn.close()
