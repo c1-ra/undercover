@@ -9,12 +9,13 @@ To test it, it is necessary to add server and port value in server.py (lines 6-7
 It is my first try at an online multiplayer game, and it is still a WIP.
 
 Notes:
-The first player to connect have to choose a number for the words with which they will play. It is to be sure that when they play another time they can pick from where they left and do not get the same words.
+The players will have to use a vocal application to talk with each other, the game only distributes the roles, show to each player theirs, and show everybody the order in which they should play.
+The players who create a room have to choose a number for the words with which they will play. It is to be sure that when they play another time they can pick from where they left and do not get the same words.
+
+Edit 12/14: I have added the possibility to create a room. It works with one room (players cannot join a room which does not exist, they have to type once again the room name if it is not found, and all the information (words_nb, players_roles) is stocked in a dictionary with the id of the game in order to separate the different games and their information), but I have not tested the creation of different rooms yet. 
 
 Next steps:
+- test if it works with different rooms
 - add a back button
-- get rid of some global variables
-- not allow two same player_names
-- not allow the words used to get game information back from the server to be used as player_names / find another way to get these information without sending strings -> maybe trigger it from the server.py file
-- add the possibility to create or join a room
-- add a "ready" button for everybody and wait for everybody to click on it before starting the game
+- get rid of some variables not used
+- not allow two same player names (in the same game_id only?)
