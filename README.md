@@ -29,7 +29,6 @@ Edit 14/12:
     11: play with next words
 
 Next steps:
-- test if it works with different rooms
 - add a back button
 - get rid of some variables not used
-- not allow two same player names (in the same game_id only?)
+- not allow two same player names in the same game_id
